@@ -64,33 +64,15 @@ function checkPassword() {
     const error = document.getElementById('password-error');
 
     if (input.value === CONFIG.password) {
-<<<<<<< HEAD
-        // Correct password!
+        // Correct password! Show valentine question
         // Stop the countdown timer to prevent it from showing password screen again
         if (countdownInterval) {
             clearInterval(countdownInterval);
             countdownInterval = null;
         }
-
-        document.getElementById('password-screen').classList.add('hidden');
-        document.getElementById('main-content').classList.remove('hidden');
-        document.getElementById('music-player').classList.remove('hidden');
-
-        // Initialize everything
-        initDaysTogether();
-        initQuiz();
-        createFloatingHearts();
-
-        // Smooth scroll to top
-        window.scrollTo(0, 0);
-
-        // Play celebration effect
-        celebrateEntry();
-=======
-        // Correct password! Show valentine question
+        
         document.getElementById('password-screen').classList.add('hidden');
         document.getElementById('valentine-question').classList.remove('hidden');
->>>>>>> 464ab04fad4c4f134a962f19b5adea3d83365b04
     } else {
         // Wrong password
         error.textContent = CONFIG.wrongPasswordMessages[CONFIG.wrongPasswordIndex];
