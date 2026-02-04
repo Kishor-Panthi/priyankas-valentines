@@ -182,10 +182,20 @@ function showMainContent() {
     window.scrollTo(0, 0);
 }
 
+let noButtonMoveCount = 0;
+
 function moveNoButton() {
     const noBtn = document.getElementById('no-btn');
     const container = document.querySelector('.valentine-content');
     const containerRect = container.getBoundingClientRect();
+    
+    noButtonMoveCount++;
+    
+    // On mobile or after many attempts, shrink the button
+    if (noButtonMoveCount > 3) {
+        const scale = Math.max(0.3, 1 - (noButtonMoveCount * 0.15));
+        noBtn.style.transform = `scale(${scale})`;
+    }
     
     // Calculate random position within container bounds
     const maxX = containerRect.width - noBtn.offsetWidth - 40;
@@ -197,8 +207,19 @@ function moveNoButton() {
     noBtn.style.position = 'absolute';
     noBtn.style.left = randomX + 'px';
     noBtn.style.top = randomY + 'px';
-    noBtn.style.transition = 'all 0.1s ease';
+    noBtn.style.transition = 'all 0.15s ease';
 }
+
+// Mobile touch support - move button on touch start too
+document.addEventListener('DOMContentLoaded', () => {
+    const noBtn = document.getElementById('no-btn');
+    if (noBtn) {
+        noBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            moveNoButton();
+        }, { passive: false });
+    }
+});
 
 function clickedNo() {
     noClickCount++;
@@ -213,19 +234,20 @@ function clickedNo() {
     setTimeout(() => {
         responseText.innerHTML = "Too bad you're stuck with me for life 😊💕";
         
-        // After another 1.5 seconds, proceed anyway
+        // After another 1.5 seconds, proceed to countdown (same as Yes)
         setTimeout(() => {
             document.getElementById('valentine-question').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            document.getElementById('music-player').classList.remove('hidden');
             
-            // Initialize everything
-            initDaysTogether();
-            initQuiz();
-            createFloatingHearts();
-            
-            // Smooth scroll to top
-            window.scrollTo(0, 0);
+            // Check if it's already Valentine's Day
+            const now = new Date();
+            if (now >= CONFIG.valentinesDay) {
+                // It's Valentine's Day! Show password screen
+                document.getElementById('password-screen').classList.remove('hidden');
+            } else {
+                // Not yet - show countdown to unlock
+                document.getElementById('unlock-countdown').classList.remove('hidden');
+                startUnlockCountdown();
+            }
             
             celebrateEntry();
         }, 1500);
