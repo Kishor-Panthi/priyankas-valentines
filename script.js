@@ -680,33 +680,22 @@ function closePopup() {
 let countdownInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Start countdown timer
-    updateCountdown();
-    countdownInterval = setInterval(updateCountdown, 1000);
+    // SHOW VALENTINE QUESTION DIRECTLY (skip countdown and password)
+    // Valentine question is shown first - no countdown or password gates
+    document.getElementById('countdown-screen').classList.add('hidden');
+    document.getElementById('password-screen').classList.add('hidden');
+    document.getElementById('valentine-question').classList.remove('hidden');
     
-    // For testing: add ?unlock to URL to skip countdown
-    if (window.location.search.includes('unlock')) {
-        document.getElementById('countdown-screen').classList.add('hidden');
-        document.getElementById('password-screen').classList.remove('hidden');
-    }
+    // Create floating hearts for the valentine question screen
+    createFloatingHearts();
     
-    // For testing: add ?valentine to URL to skip to valentine question
-    if (window.location.search.includes('valentine')) {
-        document.getElementById('countdown-screen').classList.add('hidden');
-        document.getElementById('password-screen').classList.add('hidden');
-        document.getElementById('valentine-question').classList.remove('hidden');
-    }
-    
-    // For testing: add ?skip to URL to skip everything
+    // For testing: add ?skip to URL to skip everything and go to main content
     if (window.location.search.includes('skip')) {
-        document.getElementById('countdown-screen').classList.add('hidden');
-        document.getElementById('password-screen').classList.add('hidden');
         document.getElementById('valentine-question').classList.add('hidden');
         document.getElementById('main-content').classList.remove('hidden');
         document.getElementById('music-player').classList.remove('hidden');
         initDaysTogether();
         initQuiz();
-        createFloatingHearts();
     }
 });
 

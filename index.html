@@ -11,8 +11,8 @@
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💕</text></svg>">
 </head>
 <body>
-    <!-- Countdown Lock Screen -->
-    <div id="countdown-screen" class="fullscreen">
+    <!-- Countdown Lock Screen (Hidden - skipping to Valentine question) -->
+    <div id="countdown-screen" class="fullscreen hidden">
         <div class="floating-hearts"></div>
         <div class="countdown-content">
             <h1 class="countdown-title">Something Special is Coming...</h1>
@@ -35,12 +35,12 @@
                     <label>Seconds</label>
                 </div>
             </div>
-            <p class="countdown-date">Valentine's Day 2025 💝</p>
+            <p class="countdown-date">Valentine's Day 2026 💝</p>
             <p class="countdown-hint">Patience, Sanu... ramro kura ko laagi wait garnu parcha 🌸</p>
         </div>
     </div>
 
-    <!-- Password Gate -->
+    <!-- Password Gate (Hidden - skipping to Valentine question) -->
     <div id="password-screen" class="fullscreen hidden">
         <div class="floating-hearts"></div>
         <div class="password-content">
@@ -56,8 +56,8 @@
         </div>
     </div>
 
-    <!-- Valentine Question Gate -->
-    <div id="valentine-question" class="fullscreen hidden">
+    <!-- Valentine Question Gate (SHOWN FIRST) -->
+    <div id="valentine-question" class="fullscreen">
         <div class="floating-hearts"></div>
         <div class="valentine-content">
             <h1 class="valentine-title">Sanu... 💕</h1>
@@ -345,7 +345,34 @@
             </div>
         </section>
 
-        <!-- Love Letter -->
+        <!-- Better Boyfriend Section -->
+<section id="better-boyfriend" class="section">
+  <div class="container">
+    <h2 class="section-title">Help Me Be Better 💕</h2>
+    <p class="section-subtitle">Sanu, tell me how I can be the best boyfriend for you</p>
+    <div class="boyfriend-container">
+      <div class="boyfriend-question">
+        <p class="question-text">What can I do to be a better boyfriend? 🥺</p>
+        <textarea id="boyfriend-input" placeholder="Type your thoughts here, Sanu..."></textarea>
+        <button id="boyfriend-submit" onclick="submitBoyfriendNote()">💌 Send to My Love</button>
+        <p id="boyfriend-success" class="success-message hidden">Thank you, Sanu! I'll read this carefully 💕</p>
+      </div>
+      <div class="boyfriend-view-toggle">
+        <button id="view-notes-btn" onclick="toggleBoyfriendView()">🔐 View My Notes (Kishor Only)</button>
+        <div id="boyfriend-password-check" class="hidden">
+          <input type="password" id="boyfriend-password" placeholder="Enter secret code...">
+          <button onclick="checkBoyfriendPassword()">Unlock</button>
+          <p id="boyfriend-password-error" class="error-message"></p>
+        </div>
+      </div>
+      <div id="boyfriend-notes" class="hidden">
+        <h3>💝 Notes from My Princess</h3>
+        <div id="notes-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- Love Letter -->
         <section id="love-letter" class="section">
             <div class="container">
                 <h2 class="section-title">A Letter For You 💌</h2>
