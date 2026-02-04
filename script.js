@@ -118,15 +118,15 @@ function sayYes() {
     // Celebration effect
     celebrateEntry();
     
-    // After 2.5 seconds, show unlock countdown (or main content if Valentine's Day)
+    // After 2.5 seconds, show unlock countdown (or password screen if Valentine's Day)
     setTimeout(() => {
         document.getElementById('valentine-question').classList.add('hidden');
         
         // Check if it's already Valentine's Day
         const now = new Date();
         if (now >= CONFIG.valentinesDay) {
-            // It's Valentine's Day! Show main content
-            showMainContent();
+            // It's Valentine's Day! Show password screen
+            document.getElementById('password-screen').classList.remove('hidden');
         } else {
             // Not yet - show countdown to unlock
             document.getElementById('unlock-countdown').classList.remove('hidden');
@@ -148,13 +148,13 @@ function updateUnlockCountdown() {
     const diff = CONFIG.valentinesDay - now;
     
     if (diff <= 0) {
-        // Valentine's Day has arrived! Unlock the content
+        // Valentine's Day has arrived! Show password screen
         if (unlockCountdownInterval) {
             clearInterval(unlockCountdownInterval);
             unlockCountdownInterval = null;
         }
         document.getElementById('unlock-countdown').classList.add('hidden');
-        showMainContent();
+        document.getElementById('password-screen').classList.remove('hidden');
         return;
     }
     
