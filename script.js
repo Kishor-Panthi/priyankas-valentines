@@ -32,6 +32,158 @@ const CONFIG = {
 };
 
 // ========================================
+// Dreamy Floating Hearts System
+// ========================================
+function createDreamyHearts(container) {
+    if (!container) return;
+    
+    const heartEmojis = ['💕', '💖', '💗', '💓', '💝', '🌸', '✨'];
+    const useCSSHeart = () => Math.random() < 0.3; // 30% chance of CSS-drawn heart
+    const heartColors = [
+        'rgba(255, 105, 180, 0.5)',
+        'rgba(255, 20, 147, 0.4)',
+        'rgba(255, 133, 162, 0.5)',
+        'rgba(240, 147, 251, 0.4)',
+        'rgba(245, 87, 108, 0.5)',
+        'rgba(254, 207, 239, 0.6)'
+    ];
+
+    function spawnHeart() {
+        const heart = document.createElement('div');
+        heart.classList.add('floating-heart');
+        
+        const size = Math.random() * 18 + 8; // 8-26px
+        const duration = Math.random() * 8 + 10; // 10-18s
+        const delay = Math.random() * 2;
+        const opacity = Math.random() * 0.5 + 0.2; // 0.2-0.7
+        const sway = Math.random() * 60 + 20; // 20-80px sway
+        const left = Math.random() * 100;
+
+        heart.style.setProperty('--duration', duration + 's');
+        heart.style.setProperty('--delay', delay + 's');
+        heart.style.setProperty('--target-opacity', opacity);
+        heart.style.setProperty('--sway', sway + 'px');
+        heart.style.left = left + '%';
+
+        if (useCSSHeart()) {
+            heart.classList.add('css-heart');
+            const csSize = size * 0.6;
+            heart.style.setProperty('--size', csSize + 'px');
+            heart.style.setProperty('--heart-color', heartColors[Math.floor(Math.random() * heartColors.length)]);
+        } else {
+            heart.textContent = heartEmojis[Math.floor(Math.random() * heartEmojis.length)];
+            heart.style.fontSize = size + 'px';
+        }
+
+        container.appendChild(heart);
+
+        // Remove after animation
+        setTimeout(() => {
+            if (heart.parentNode) heart.remove();
+        }, (duration + delay) * 1000 + 500);
+    }
+
+    // Initial batch
+    for (let i = 0; i < 8; i++) {
+        setTimeout(spawnHeart, i * 400);
+    }
+
+    // Continuous spawning
+    const interval = setInterval(() => {
+        if (!document.body.contains(container)) {
+            clearInterval(interval);
+            return;
+        }
+        spawnHeart();
+    }, 2500);
+
+    return interval;
+}
+
+// Start hearts on all visible floating-hearts containers
+function initAllFloatingHearts() {
+    document.querySelectorAll('.floating-hearts').forEach(container => {
+        // Only init if parent is visible
+        const parent = container.closest('.fullscreen, .section');
+        if (parent && !parent.classList.contains('hidden')) {
+            if (!container._heartsInit) {
+                container._heartsInit = true;
+                createDreamyHearts(container);
+            }
+        }
+    });
+}
+
+// ========================================
+// Scroll-triggered Reveal Animations
+// ========================================
+function initScrollAnimations() {
+    // Tag elements for animation
+    document.querySelectorAll('.section-title, .section-subtitle').forEach(el => {
+        if (!el.classList.contains('reveal')) el.classList.add('reveal');
+    });
+
+    document.querySelectorAll('.timeline-item.left .timeline-content').forEach(el => {
+        if (!el.classList.contains('reveal-left')) el.classList.add('reveal-left');
+    });
+
+    document.querySelectorAll('.timeline-item.right .timeline-content').forEach(el => {
+        if (!el.classList.contains('reveal-right')) el.classList.add('reveal-right');
+    });
+
+    document.querySelectorAll('.chat-screenshot img, .meet-image img, .closing-image img').forEach(el => {
+        if (!el.classList.contains('reveal-scale')) el.classList.add('reveal-scale');
+    });
+
+    document.querySelectorAll('.promise-gallery, .future-gallery').forEach(el => {
+        if (!el.classList.contains('stagger-children')) el.classList.add('stagger-children');
+    });
+
+    // Also reveal other content blocks
+    document.querySelectorAll('.meet-text, .promise-text, .future-text, .letter-container, .spotify-section, #quiz-container, .boyfriend-container, .closing-text').forEach(el => {
+        if (!el.classList.contains('reveal')) el.classList.add('reveal');
+    });
+
+    // Intersection Observer
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                // Don't unobserve — keep it simple, one-shot
+                observer.unobserve(entry.target);
+            }
+        });
+    }, {
+        threshold: 0.12,
+        rootMargin: '0px 0px -40px 0px'
+    });
+
+    document.querySelectorAll('.reveal, .reveal-left, .reveal-right, .reveal-scale, .stagger-children').forEach(el => {
+        observer.observe(el);
+    });
+}
+
+// ========================================
+// Parallax on Hero Background
+// ========================================
+function initParallax() {
+    const heroBg = document.querySelector('.hero-background');
+    if (!heroBg) return;
+
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const scrollY = window.scrollY;
+                heroBg.style.transform = `translateY(${scrollY * 0.3}px) translateZ(0)`;
+                ticking = false;
+            });
+            ticking = true;
+        }
+    }, { passive: true });
+}
+
+// ========================================
 // Countdown Timer
 // ========================================
 function updateCountdown() {
@@ -39,7 +191,6 @@ function updateCountdown() {
     const diff = CONFIG.valentinesDay - now;
     
     if (diff <= 0) {
-        // Valentine's Day has arrived! Show password screen
         document.getElementById('countdown-screen').classList.add('hidden');
         document.getElementById('password-screen').classList.remove('hidden');
         return;
@@ -64,8 +215,6 @@ function checkPassword() {
     const error = document.getElementById('password-error');
 
     if (input.value === CONFIG.password) {
-        // Correct password! Show main content
-        // Stop any countdown timer
         if (countdownInterval) {
             clearInterval(countdownInterval);
             countdownInterval = null;
@@ -79,11 +228,9 @@ function checkPassword() {
         showMainContent();
         celebrateEntry();
     } else {
-        // Wrong password
         error.textContent = CONFIG.wrongPasswordMessages[CONFIG.wrongPasswordIndex];
         CONFIG.wrongPasswordIndex = (CONFIG.wrongPasswordIndex + 1) % CONFIG.wrongPasswordMessages.length;
         
-        // Shake animation
         input.style.animation = 'shake 0.5s ease-in-out';
         setTimeout(() => {
             input.style.animation = '';
@@ -117,24 +264,18 @@ function sayYes() {
     responseDiv.classList.remove('hidden');
     responseText.innerHTML = "I knew you'd say yes! 💕💕💕<br>Mero sanu, I love you so much!";
     
-    // Hide buttons
     document.querySelector('.valentine-buttons').style.display = 'none';
     
-    // Celebration effect
     celebrateEntry();
     
-    // After 2.5 seconds, show unlock countdown (or password screen if Valentine's Day)
     setTimeout(() => {
         document.getElementById('valentine-question').classList.add('hidden');
         
-        // Check if it's already Valentine's Day
         const now = new Date();
         if (now >= CONFIG.valentinesDay) {
-            // It's Valentine's Day! Show password screen
             document.getElementById('password-screen').classList.remove('hidden');
             saveState('password');
         } else {
-            // Not yet - show countdown to unlock
             document.getElementById('unlock-countdown').classList.remove('hidden');
             startUnlockCountdown();
             saveState('countdown');
@@ -155,7 +296,6 @@ function updateUnlockCountdown() {
     const diff = CONFIG.valentinesDay - now;
     
     if (diff <= 0) {
-        // Valentine's Day has arrived! Show password screen
         if (unlockCountdownInterval) {
             clearInterval(unlockCountdownInterval);
             unlockCountdownInterval = null;
@@ -180,19 +320,25 @@ function showMainContent() {
     document.getElementById('main-content').classList.remove('hidden');
     document.getElementById('music-player').classList.remove('hidden');
     
-    // Save state
     saveState('main');
     
-    // Initialize everything
     initDaysTogether();
     initQuiz();
-    createFloatingHearts();
+    initAllFloatingHearts();
+    initScrollAnimations();
+    initParallax();
     
-    // Smooth scroll to top
     window.scrollTo(0, 0);
 }
 
+// ========================================
+// Playful "No" Button Dodge
+// ========================================
 let noButtonMoveCount = 0;
+const dodgeMessages = [
+    'Nope!', 'Try again 😏', 'Hehe', 'Can\'t catch me!', '😜', 'Wrong answer!', 
+    'Really?', '🏃‍♀️💨', 'Lol no', 'Nice try'
+];
 
 function moveNoButton() {
     const noBtn = document.getElementById('no-btn');
@@ -201,26 +347,40 @@ function moveNoButton() {
     
     noButtonMoveCount++;
     
-    // On mobile or after many attempts, shrink the button
+    // Shrink after several attempts
     if (noButtonMoveCount > 3) {
-        const scale = Math.max(0.3, 1 - (noButtonMoveCount * 0.15));
-        noBtn.style.transform = `scale(${scale})`;
+        const scale = Math.max(0.25, 1 - (noButtonMoveCount * 0.12));
+        noBtn.style.fontSize = Math.max(0.7, 1.2 - noButtonMoveCount * 0.08) + 'rem';
+        noBtn.style.padding = `${Math.max(6, 15 - noButtonMoveCount * 2)}px ${Math.max(15, 40 - noButtonMoveCount * 4)}px`;
+    }
+
+    // Playful text changes
+    if (noButtonMoveCount > 2) {
+        noBtn.textContent = dodgeMessages[noButtonMoveCount % dodgeMessages.length];
+    }
+
+    // Grow the Yes button
+    const yesBtn = document.getElementById('yes-btn');
+    if (yesBtn && noButtonMoveCount > 1) {
+        const yesScale = Math.min(1.4, 1 + noButtonMoveCount * 0.05);
+        yesBtn.style.transform = `scale(${yesScale})`;
     }
     
-    // Calculate random position within container bounds
-    const maxX = containerRect.width - noBtn.offsetWidth - 40;
-    const maxY = containerRect.height - noBtn.offsetHeight - 40;
+    // Random position within container
+    const maxX = containerRect.width - noBtn.offsetWidth - 20;
+    const maxY = containerRect.height - noBtn.offsetHeight - 20;
     
-    const randomX = Math.random() * maxX;
-    const randomY = Math.random() * maxY;
+    const randomX = Math.max(10, Math.random() * maxX);
+    const randomY = Math.max(10, Math.random() * maxY);
     
     noBtn.style.position = 'absolute';
     noBtn.style.left = randomX + 'px';
     noBtn.style.top = randomY + 'px';
-    noBtn.style.transition = 'all 0.15s ease';
+    noBtn.style.transition = 'all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    noBtn.style.zIndex = '10';
 }
 
-// Mobile touch support - move button on touch start too
+// Mobile touch support
 document.addEventListener('DOMContentLoaded', () => {
     const noBtn = document.getElementById('no-btn');
     if (noBtn) {
@@ -240,22 +400,17 @@ function clickedNo() {
     responseDiv.classList.remove('hidden');
     responseText.innerHTML = "You're nisturi, you know that 😢";
     
-    // After 1 second, show the "stuck with me" message
     setTimeout(() => {
         responseText.innerHTML = "Too bad you're stuck with me for life 😊💕";
         
-        // After another 1.5 seconds, proceed to countdown (same as Yes)
         setTimeout(() => {
             document.getElementById('valentine-question').classList.add('hidden');
             
-            // Check if it's already Valentine's Day
             const now = new Date();
             if (now >= CONFIG.valentinesDay) {
-                // It's Valentine's Day! Show password screen
                 document.getElementById('password-screen').classList.remove('hidden');
                 saveState('password');
             } else {
-                // Not yet - show countdown to unlock
                 document.getElementById('unlock-countdown').classList.remove('hidden');
                 startUnlockCountdown();
                 saveState('countdown');
@@ -284,7 +439,7 @@ function initDaysTogether() {
     }
     
     update();
-    setInterval(update, 60000); // Update every minute
+    setInterval(update, 60000);
 }
 
 // ========================================
@@ -294,10 +449,10 @@ const quizQuestions = [
     {
         question: "What dating app did we meet on? 💕",
         options: ["Instagram", "Bumble", "Dil Mil", "Hinge"],
-        correct: 0, // Instagram is correct
+        correct: 0,
         specialBehavior: "conditional",
         specialConfig: {
-            warningIndex: 2, // Dil Mil - shows warning, allows retry
+            warningIndex: 2,
             warningMessage: "We won't tell anyone that it was Dil Mil",
             correctMessage: "see I listen to you 😏💕"
         },
@@ -319,7 +474,7 @@ const quizQuestions = [
     {
         question: "What's your nickname that I use the most? 🥰",
         options: ["Baby", "Sanu", "Mutu", "Sweetheart"],
-        correct: -1, // No single correct answer
+        correct: -1,
         specialBehavior: "multi-correct",
         specialConfig: {
             popupMessage: "I love calling you all these things",
@@ -464,25 +619,19 @@ function selectAnswer(index) {
     const options = document.querySelectorAll('.quiz-option');
     const resultEl = document.getElementById('quiz-result');
 
-    // Disable all options
     options.forEach(opt => opt.style.pointerEvents = 'none');
 
-    // Handle special behaviors
     if (q.specialBehavior === 'conditional') {
-        // Question 1: Conditional logic for dating app
         if (index === q.specialConfig.warningIndex) {
-            // Dil Mil - show yellow warning, allow retry (don't count as correct)
             options[index].classList.add('incorrect');
             showQuizPopup(q.specialConfig.warningMessage, null, 'warning');
-            return; // Warning popup will reset options for retry
+            return;
         } else if (index === q.correct) {
-            // Instagram - correct answer
             options[index].classList.add('correct');
             score++;
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `<p>${q.specialConfig.correctMessage}</p>`;
         } else {
-            // Wrong answer
             options[index].classList.add('incorrect');
             options[q.correct].classList.add('correct');
             resultEl.classList.remove('hidden');
@@ -490,63 +639,50 @@ function selectAnswer(index) {
         }
     }
     else if (q.specialBehavior === 'multi-correct') {
-        // Question 3: All options turn green
         options.forEach(opt => opt.classList.add('correct'));
-        score++; // Always correct
+        score++;
         showQuizPopup(
             q.specialConfig.popupMessage,
             q.specialConfig.additionalText
         );
-        return; // Popup will handle advancement
+        return;
     }
     else if (q.specialBehavior === 'retry') {
-        // Question 5: Allow retry on wrong answer
         if (index === q.correct) {
             options[index].classList.add('correct');
             score++;
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `<p>${q.response.correct}</p>`;
-            // Normal advancement
             setTimeout(() => {
                 resultEl.classList.add('hidden');
                 currentQuestion++;
                 showQuestion();
             }, 2000);
         } else {
-            // Wrong answer - show retry message, re-enable options
             options[index].classList.add('incorrect');
-
-            // Show retry message temporarily
             resultEl.classList.remove('hidden');
             resultEl.innerHTML = `<p class="retry-message">${q.specialConfig.retryMessage}</p>`;
-
             setTimeout(() => {
-                // Reset this option and re-enable all options
                 options[index].classList.remove('incorrect');
                 options.forEach(opt => opt.style.pointerEvents = 'auto');
                 resultEl.classList.add('hidden');
             }, 1500);
         }
-        return; // Don't auto-advance
+        return;
     }
     else {
-        // Standard behavior
         options[index].classList.add(index === q.correct ? 'correct' : 'incorrect');
         if (index !== q.correct) {
             options[q.correct].classList.add('correct');
         }
-
         if (index === q.correct) {
             score++;
         }
-
-        // Show response message
         const responseText = index === q.correct ? q.response.correct : q.response.wrong;
         resultEl.classList.remove('hidden');
         resultEl.innerHTML = `<p>${responseText}</p>`;
     }
 
-    // Auto-advance for standard and conditional questions
     setTimeout(() => {
         resultEl.classList.add('hidden');
         currentQuestion++;
@@ -604,7 +740,7 @@ function showQuizResult() {
 function showQuizPopup(message, additionalText = null, type = 'default') {
     const popup = document.createElement('div');
     popup.className = 'quiz-popup';
-    popup.dataset.type = type; // Store type for closeQuizPopup
+    popup.dataset.type = type;
     popup.innerHTML = `
         <div class="quiz-popup-content ${type === 'warning' ? 'warning' : ''}">
             <p class="quiz-popup-message">${message}</p>
@@ -622,14 +758,12 @@ function closeQuizPopup() {
         popup.remove();
 
         if (type === 'warning') {
-            // Warning popup: reset options and allow retry
             const options = document.querySelectorAll('.quiz-option');
             options.forEach(opt => {
                 opt.classList.remove('incorrect', 'correct');
                 opt.style.pointerEvents = 'auto';
             });
         } else {
-            // Default popup: advance to next question
             currentQuestion++;
             showQuestion();
         }
@@ -637,74 +771,9 @@ function closeQuizPopup() {
 }
 
 // ========================================
-// Floating Hearts Effect
-// ========================================
-function createFloatingHearts() {
-    const hearts = ['💕', '💖', '💗', '💓', '💝', '🌸', '✨', '💕'];
-    const container = document.querySelector('#main-content');
-    
-    function createHeart() {
-        const heart = document.createElement('div');
-        heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
-        heart.style.cssText = `
-            position: fixed;
-            left: ${Math.random() * 100}vw;
-            top: 100vh;
-            font-size: ${Math.random() * 20 + 15}px;
-            opacity: ${Math.random() * 0.5 + 0.3};
-            pointer-events: none;
-            z-index: 50;
-            animation: floatUp ${Math.random() * 5 + 5}s linear forwards;
-        `;
-        document.body.appendChild(heart);
-        
-        setTimeout(() => heart.remove(), 10000);
-    }
-    
-    // Create hearts periodically
-    setInterval(createHeart, 2000);
-}
-
-// Add float up animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes floatUp {
-        0% {
-            transform: translateY(0) rotate(0deg);
-            opacity: 0;
-        }
-        10% {
-            opacity: 0.7;
-        }
-        90% {
-            opacity: 0.7;
-        }
-        100% {
-            transform: translateY(-110vh) rotate(360deg);
-            opacity: 0;
-        }
-    }
-    
-    @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20% { transform: translateX(-10px); }
-        40% { transform: translateX(10px); }
-        60% { transform: translateX(-10px); }
-        80% { transform: translateX(10px); }
-    }
-    
-    @keyframes confetti {
-        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-    }
-`;
-document.head.appendChild(style);
-
-// ========================================
 // Celebration Effect on Entry
 // ========================================
 function celebrateEntry() {
-    const colors = ['#ff69b4', '#ff1493', '#ff85a2', '#ffc0cb', '#ffb6c1'];
     const emojis = ['💕', '💖', '💗', '💓', '💝', '🎉', '✨', '🌸'];
     
     for (let i = 0; i < 50; i++) {
@@ -757,6 +826,71 @@ function closePopup() {
 }
 
 // ========================================
+// Better Boyfriend Section
+// ========================================
+function submitBoyfriendNote() {
+    const input = document.getElementById('boyfriend-input');
+    const success = document.getElementById('boyfriend-success');
+    const text = input.value.trim();
+    
+    if (!text) return;
+    
+    // Save to localStorage
+    try {
+        const notes = JSON.parse(localStorage.getItem('boyfriend_notes') || '[]');
+        notes.push({
+            text: text,
+            date: new Date().toISOString()
+        });
+        localStorage.setItem('boyfriend_notes', JSON.stringify(notes));
+    } catch (e) {
+        console.log('Could not save note:', e);
+    }
+    
+    input.value = '';
+    success.classList.remove('hidden');
+    setTimeout(() => success.classList.add('hidden'), 3000);
+}
+
+function toggleBoyfriendView() {
+    const check = document.getElementById('boyfriend-password-check');
+    check.classList.toggle('hidden');
+}
+
+function checkBoyfriendPassword() {
+    const input = document.getElementById('boyfriend-password');
+    const error = document.getElementById('boyfriend-password-error');
+    const notes = document.getElementById('boyfriend-notes');
+    
+    if (input.value === 'kishor123') {
+        notes.classList.remove('hidden');
+        document.getElementById('boyfriend-password-check').classList.add('hidden');
+        loadBoyfriendNotes();
+    } else {
+        error.textContent = 'Wrong password! This is for Kishor only 😤';
+    }
+}
+
+function loadBoyfriendNotes() {
+    const list = document.getElementById('notes-list');
+    try {
+        const notes = JSON.parse(localStorage.getItem('boyfriend_notes') || '[]');
+        if (notes.length === 0) {
+            list.innerHTML = '<p class="empty-notes">No notes yet... waiting for my Princess to write something 🥺</p>';
+        } else {
+            list.innerHTML = notes.map(n => `
+                <div class="note-item">
+                    <div class="note-date">${new Date(n.date).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</div>
+                    <div class="note-text">${n.text}</div>
+                </div>
+            `).join('');
+        }
+    } catch (e) {
+        list.innerHTML = '<p class="empty-notes">Could not load notes</p>';
+    }
+}
+
+// ========================================
 // State Persistence (localStorage)
 // ========================================
 const STATE_KEY = 'priyanka_valentine_state';
@@ -793,6 +927,26 @@ function clearState() {
 }
 
 // ========================================
+// Injected Keyframe Styles
+// ========================================
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20% { transform: translateX(-10px); }
+        40% { transform: translateX(10px); }
+        60% { transform: translateX(-10px); }
+        80% { transform: translateX(10px); }
+    }
+    
+    @keyframes confetti {
+        0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// ========================================
 // Initialize
 // ========================================
 let countdownInterval = null;
@@ -805,33 +959,30 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('unlock-countdown').classList.add('hidden');
     document.getElementById('main-content').classList.add('hidden');
     
-    // Check for saved state
     const savedState = loadState();
     
-    // For testing: add ?reset to URL to clear state
     if (window.location.search.includes('reset')) {
         clearState();
         window.location.href = window.location.pathname;
         return;
     }
     
-    // For testing: add ?skip to URL to skip everything
     if (window.location.search.includes('skip')) {
         document.getElementById('main-content').classList.remove('hidden');
         document.getElementById('music-player').classList.remove('hidden');
         initDaysTogether();
         initQuiz();
-        createFloatingHearts();
+        initAllFloatingHearts();
+        initScrollAnimations();
+        initParallax();
         return;
     }
     
-    // Restore state or show valentine question
     if (savedState) {
         const now = new Date();
         
         switch (savedState.screen) {
             case 'countdown':
-                // Check if Valentine's Day arrived while away
                 if (now >= CONFIG.valentinesDay) {
                     document.getElementById('password-screen').classList.remove('hidden');
                     saveState('password');
@@ -848,18 +999,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('music-player').classList.remove('hidden');
                 initDaysTogether();
                 initQuiz();
+                initScrollAnimations();
+                initParallax();
                 break;
             default:
-                // Unknown state, show valentine question
                 document.getElementById('valentine-question').classList.remove('hidden');
         }
     } else {
-        // No saved state - show valentine question
         document.getElementById('valentine-question').classList.remove('hidden');
     }
     
-    // Create floating hearts
-    createFloatingHearts();
+    // Init floating hearts on visible screens
+    initAllFloatingHearts();
 });
 
 // ========================================
@@ -888,7 +1039,6 @@ document.addEventListener('keydown', (e) => {
     konamiCode = konamiCode.slice(-10);
     
     if (konamiCode.join(',') === konamiSequence.join(',')) {
-        // Easter egg activated!
         document.getElementById('love-more-popup').classList.remove('hidden');
         konamiCode = [];
     }
